@@ -1,11 +1,11 @@
-// read and set any environment variables with the dotenv package
 require("dotenv").config();
 
-// Import the keys.js file and store it in a variable.
 var keys = require("./keys.js");
 var axios = require("axios");
 var fs = require("fs");
 var moment = require('moment');
+
+
 var divider = "\n ///-----------------------------------------------------------------------------------------------///" + '\n'
 var Spotify = require('node-spotify-api');
 var spotifyNew = new Spotify(keys.spotify);
@@ -21,12 +21,11 @@ var artistsList = [];
  * @param {*} _value value to be consulted
  */
 function searchLiri(_action, _value) {
-    // concert-this
+    
     if (_action === "concert-this") {
         searchConcert(_value);
     }
 
-    // spotify-this-song
     if (_action === "spotify-this-song") {
 
         if (!_value) {
@@ -38,7 +37,6 @@ function searchLiri(_action, _value) {
 
     }
 
-    // movie-this
     if (_action === "movie-this") {
         if (!_value) {
             searchMovie("Mr. Nobody");
@@ -54,7 +52,6 @@ function searchLiri(_action, _value) {
 
 }
 
-
 /**
  *Log results on log.txt file
  *
@@ -67,7 +64,6 @@ function logAction(text) {
         }
     })
 }
-
 
 /**
  *Serach for concert events
@@ -146,7 +142,7 @@ function searchMovie(_value) {
         function (response) {
             var rottenRating = 'NULL';
             
-            // Ask if there any result 
+            // Ask if any result 
             if (response.data.Response === "True") {
 
                 response.data.Ratings.forEach(element => {
@@ -176,7 +172,6 @@ function searchMovie(_value) {
     );
 }
 
-
 /**
  *Read the parameters on random file and console log
  *
@@ -185,12 +180,10 @@ function searchRandomFile() {
 
     fs.readFile("random.txt", 'utf8', function (error, text) {
 
-        // If the code experiences any errors it will log the error to the console.
         if (error) {
             return console.log(error);
         }
 
-        // console.log(text);
         var data = text.split(",");
 
         console.log(data[0] + ", " + data[1])        
@@ -207,5 +200,3 @@ function searchRandomFile() {
 }
 
 searchLiri(action, value);
-
-// do-what-it-says
