@@ -6,7 +6,7 @@ var keys = require("./keys.js");
 var axios = require("axios");
 var fs = require("fs");
 var moment = require('moment');
-var divider  = "\n ///-----------------------------------------------------------------------------------------------///" + '\n'
+var divider = "\n ///-----------------------------------------------------------------------------------------------///" + '\n'
 var Spotify = require('node-spotify-api');
 var spotifyNew = new Spotify(keys.spotify);
 var action = process.argv[2];
@@ -28,12 +28,24 @@ function searchLiri(_action, _value) {
 
     // spotify-this-song
     if (_action === "spotify-this-song") {
-        searchSpotify(_value);
+
+        if (!_value) {
+            searchSpotify("The Sign, Ace of Base");
+        }
+        else {
+            searchSpotify(_value);
+        }
+
     }
 
     // movie-this
     if (_action === "movie-this") {
-        searchMovie(_value);
+        if (!_value) {
+            searchMovie("Mr. Nobody");
+        }
+        else {
+            searchMovie(_value);
+        }
     }
 
     if (_action === "do-what-it-says") {
@@ -48,11 +60,11 @@ function searchLiri(_action, _value) {
  *
  * @param {*} text
  */
-function logAction(text){
-    fs.appendFile("Log.txt", text + divider,  error =>{
+function logAction(text) {
+    fs.appendFile("Log.txt", text + divider, error => {
         if (error) {
             throw error;
-        }        
+        }
     })
 }
 
@@ -116,7 +128,7 @@ function searchSpotify(_value) {
 
             }
             else {
-                searchSpotify("The Sign, Ace of Base");
+                console.log('Song not found on spotify')
             }
         })
         .catch(function (err) {
@@ -133,28 +145,33 @@ function searchMovie(_value) {
     axios.get("http://www.omdbapi.com/?t=" + _value + "&y=&plot=short&apikey=trilogy").then(
         function (response) {
             var rottenRating = 'NULL';
+            
+            // Ask if there any result 
+            if (response.data.Response === "True") {
 
-            response.data.Ratings.forEach(element => {
-                if (element.Source === 'Rotten Tomatoes') {
-                    console.log(element)
-                    rottenRating = element.Value;
+                response.data.Ratings.forEach(element => {
+                    if (element.Source === 'Rotten Tomatoes') {
+                        rottenRating = element.Value;
+                    }
+                })
+
+                var movieObject = {
+                    Title: response.data.Title,
+                    "Released": response.data.Released,
+                    Rating: response.data.imdbRating,
+                    "Rotten Tomatoes Rating": rottenRating,
+                    Country: response.data.Country,
+                    Language: response.data.Language,
+                    Plot: response.data.Plot,
+                    Actors: response.data.Actors
                 }
-            })
 
-            // console.log(response.data)
-            var movieObject = {
-                Title: response.data.Title,
-                "Released": response.data.Released,
-                Rating: response.data.imdbRating,
-                "Rotten Tomatoes Rating": rottenRating,
-                Country: response.data.Country,
-                Language: response.data.Language,
-                Plot: response.data.Plot,
-                Actors: response.data.Actors
+                logAction(JSON.stringify(movieObject, null, 2));
+                console.log(JSON.stringify(movieObject, null, 2));
             }
-
-            logAction(JSON.stringify(movieObject, null, 2));
-            console.log(JSON.stringify(movieObject, null, 2));
+            else {
+                console.log("Movie not found")
+            }
         }
     );
 }
@@ -166,21 +183,25 @@ function searchMovie(_value) {
  */
 function searchRandomFile() {
 
-    fs.readFile("random.txt", 'utf8' , function(error, text) {
+    fs.readFile("random.txt", 'utf8', function (error, text) {
 
         // If the code experiences any errors it will log the error to the console.
         if (error) {
-          return console.log(error);
+            return console.log(error);
         }
-        
+
         // console.log(text);
         var data = text.split(",");
 
-         console.log(data[0])
-         console.log(data[1])
+        console.log(data[0] + ", " + data[1])        
 
-        // Call main search function
-        searchLiri(data[0], data[1]);
+        if ((data[0] === "concert-this" || data[0] === "spotify-this-song" || data[0] === "movie-this") && data[1]) {
+            searchLiri(data[0], data[1]);
+        }
+        else {
+            console.log("Incorrect information on random.txt file, the program will show the default movie")
+            searchLiri("movie-this", "Mr Nobody")
+        }
 
     })
 }
